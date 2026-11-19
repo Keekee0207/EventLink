@@ -28,3 +28,6 @@ coverage
 .env
 .env.local
 .env.*.local
+
+# Persistent local backend database
+data/

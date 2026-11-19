@@ -151,5 +151,40 @@ describe('storageService', () => {
       const success = importAllDataJson('INVALID_JSON_STRING');
       expect(success).toBe(false);
     });
+
+    it('should isolate logged in user data starting with clean empty collections', () => {
+      // Simulate user login
+      const mockUser = {
+        id: 'usr-isolated-test-99',
+        name: 'Isolated User',
+        email: 'isolated@test.com',
+        role: 'Engineer',
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('eventlink_active_session_user', JSON.stringify(mockUser));
+
+      // Both events and people should start clean for a new user
+      expect(getEvents()).toEqual([]);
+      expect(getPeople()).toEqual([]);
+
+      // User adds their own event
+      const userEvent: Event = {
+        id: 'evt-custom-1',
+        title: 'My Custom Private Hackathon',
+        date: '2026-11-20',
+        location: 'Hall A',
+        description: 'Private meetup',
+        peopleCount: 0,
+        createdAt: new Date().toISOString()
+      };
+      saveEvents([userEvent]);
+
+      expect(getEvents().length).toBe(1);
+      expect(getEvents()[0].title).toBe('My Custom Private Hackathon');
+
+      // Verify that the data was saved under the user-specific scoped key
+      const rawUserEvents = localStorage.getItem('eventlink_user_usr-isolated-test-99_events');
+      expect(rawUserEvents).toBeTruthy();
+    });
   });
 });

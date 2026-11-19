@@ -118,10 +118,15 @@ export function setUserRegistered(val: boolean): void {
 }
 
 export function getEvents(): Event[] {
+  const user = getCurrentUser();
   const data = localStorage.getItem(getUserEventsKey());
   if (!data) {
-    saveEvents(INITIAL_EVENTS);
-    return INITIAL_EVENTS;
+    if (!user) {
+      saveEvents(INITIAL_EVENTS);
+      return INITIAL_EVENTS;
+    }
+    // When a registered user signs in, start clean so only the user adds their own events
+    return [];
   }
   try {
     const parsed: Event[] = JSON.parse(data);
@@ -134,7 +139,7 @@ export function getEvents(): Event[] {
       return true;
     });
   } catch {
-    return INITIAL_EVENTS;
+    return user ? [] : INITIAL_EVENTS;
   }
 }
 
@@ -151,10 +156,15 @@ export function saveEvents(events: Event[]): void {
 }
 
 export function getPeople(): Person[] {
+  const user = getCurrentUser();
   const data = localStorage.getItem(getUserPeopleKey());
   if (!data) {
-    savePeople(INITIAL_PEOPLE);
-    return INITIAL_PEOPLE;
+    if (!user) {
+      savePeople(INITIAL_PEOPLE);
+      return INITIAL_PEOPLE;
+    }
+    // When a registered user signs in, start clean so only the user adds their own contacts
+    return [];
   }
   try {
     const parsed: Person[] = JSON.parse(data);
@@ -167,7 +177,7 @@ export function getPeople(): Person[] {
       return true;
     });
   } catch {
-    return INITIAL_PEOPLE;
+    return user ? [] : INITIAL_PEOPLE;
   }
 }
 
