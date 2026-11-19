@@ -27,6 +27,7 @@ const KNOWN_SKILLS = [
 ];
 
 const NAME_INTRO_REGEXES = [
+  /\b(?:i\s+met|met|spoke\s+(?:to|with)|talking\s+(?:to|with)|this\s+is|connected\s+with|chatted\s+with)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)(?=\s+(?:who|is|at|from|and|works|,|\.|$))\b/i,
   /\b(?:i\s+met|met|spoke\s+(?:to|with)|talking\s+(?:to|with)|this\s+is|connected\s+with|chatted\s+with)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)\b/i,
   /^([A-Za-z]+(?:\s+[A-Za-z]+)?)\s+(?:who\s+is|is\s+(?:an?|the)|works\s+as|from)\b/i,
   /^([A-Za-z]+(?:\s+[A-Za-z]+)?)\s*,/i
@@ -38,7 +39,14 @@ const COMPANY_INDICATOR_REGEX = /\b(?:at|in|from|works\s+at|working\s+at)\s+([A-
 function toTitleCase(str: string): string {
   return str
     .split(/\s+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .map((w) => {
+      if (/^ui\/ux$/i.test(w)) return 'UI/UX';
+      if (/^ai$/i.test(w)) return 'AI';
+      if (/^ml$/i.test(w)) return 'ML';
+      if (/^llm$/i.test(w)) return 'LLM';
+      if (/^llms$/i.test(w)) return 'LLMs';
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    })
     .join(' ');
 }
 
@@ -64,7 +72,7 @@ export function parseLocally(rawTranscript: string): ParsedContact {
   for (const regex of NAME_INTRO_REGEXES) {
     const match = transcript.match(regex);
     if (match && match[1]) {
-      const candidate = match[1].trim();
+      let candidate = match[1].trim().replace(/\s+(who|is|at|from|and|works)$/i, '');
       if (candidate.length > 2 && !/^(the|a|an|he|she|they|we|this|that|today|yesterday)$/i.test(candidate)) {
         extractedName = toTitleCase(candidate);
         break;
