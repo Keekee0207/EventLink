@@ -25,6 +25,7 @@ import {
   saveUserProfile,
   isUserRegistered
 } from './services/storageService';
+import { logoutUser } from './services/authService';
 import { Header } from './components/Header';
 import { EventCard } from './components/EventCard';
 import { ContactCard } from './components/ContactCard';
@@ -82,11 +83,21 @@ export function App() {
     setUserProfile(profile);
     setIsRegistered(true);
     setIsProfileModalOpen(false);
+    reloadAllData();
     triggerConfetti();
   };
 
   // Event Handlers
   const handleSaveEvent = (newEventData: Omit<Event, 'id' | 'peopleCount' | 'createdAt'>) => {
+    // Duplicate event prevention
+    const isDuplicate = events.some(
+      (e) => e.title.toLowerCase().trim() === newEventData.title.toLowerCase().trim()
+    );
+    if (isDuplicate) {
+      alert(`An event named "${newEventData.title}" already exists. Duplicate events are prevented.`);
+      return;
+    }
+
     const newEvent: Event = {
       ...newEventData,
       id: `evt-${Date.now()}`,
@@ -113,6 +124,20 @@ export function App() {
 
   // Contact Handlers
   const handleSaveContact = (newPersonData: Omit<Person, 'id' | 'createdAt'>) => {
+    // Duplicate contact prevention for this event
+    const cleanPhone = (newPersonData.contactNumber || '').replace(/[\s-]/g, '');
+    const isDuplicate = people.some(
+      (p) =>
+        p.eventId === newPersonData.eventId &&
+        (p.name.toLowerCase().trim() === newPersonData.name.toLowerCase().trim() ||
+          (cleanPhone && p.contactNumber && p.contactNumber.replace(/[\s-]/g, '') === cleanPhone))
+    );
+
+    if (isDuplicate) {
+      alert(`Contact "${newPersonData.name}" already exists for this event. Duplicate contacts are prevented.`);
+      return;
+    }
+
     const newPerson: Person = {
       ...newPersonData,
       id: `person-${Date.now()}`,
@@ -200,6 +225,11 @@ export function App() {
         onOpenCreateEvent={() => setIsAddEventOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenProfile={() => setIsProfileModalOpen(true)}
+        onLogout={() => {
+          logoutUser();
+          setIsRegistered(false);
+          setSelectedEvent(null);
+        }}
         eventsCount={events.length}
         peopleCount={people.length}
         userProfile={userProfile}

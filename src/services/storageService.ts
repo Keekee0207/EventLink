@@ -1,9 +1,25 @@
 import { Event, Person, UserProfile } from '../types';
+import { getCurrentUser } from './authService';
 
 const KEY_EVENTS = 'eventlink_events';
 const KEY_PEOPLE = 'eventlink_people';
 const KEY_PROFILE = 'eventlink_profile';
 const KEY_REGISTERED = 'eventlink_user_registered';
+
+function getUserEventsKey(): string {
+  const user = getCurrentUser();
+  return user ? `eventlink_user_${user.id}_events` : KEY_EVENTS;
+}
+
+function getUserPeopleKey(): string {
+  const user = getCurrentUser();
+  return user ? `eventlink_user_${user.id}_people` : KEY_PEOPLE;
+}
+
+function getUserProfileKey(): string {
+  const user = getCurrentUser();
+  return user ? `eventlink_user_${user.id}_profile` : KEY_PROFILE;
+}
 
 const INITIAL_EVENTS: Event[] = [
   {
@@ -102,7 +118,7 @@ export function setUserRegistered(val: boolean): void {
 }
 
 export function getEvents(): Event[] {
-  const data = localStorage.getItem(KEY_EVENTS);
+  const data = localStorage.getItem(getUserEventsKey());
   if (!data) {
     saveEvents(INITIAL_EVENTS);
     return INITIAL_EVENTS;
@@ -131,11 +147,11 @@ export function saveEvents(events: Event[]): void {
     seen.add(key);
     return true;
   });
-  localStorage.setItem(KEY_EVENTS, JSON.stringify(cleanEvents));
+  localStorage.setItem(getUserEventsKey(), JSON.stringify(cleanEvents));
 }
 
 export function getPeople(): Person[] {
-  const data = localStorage.getItem(KEY_PEOPLE);
+  const data = localStorage.getItem(getUserPeopleKey());
   if (!data) {
     savePeople(INITIAL_PEOPLE);
     return INITIAL_PEOPLE;
@@ -164,11 +180,11 @@ export function savePeople(people: Person[]): void {
     seen.add(key);
     return true;
   });
-  localStorage.setItem(KEY_PEOPLE, JSON.stringify(cleanPeople));
+  localStorage.setItem(getUserPeopleKey(), JSON.stringify(cleanPeople));
 }
 
 export function getUserProfile(): UserProfile {
-  const data = localStorage.getItem(KEY_PROFILE);
+  const data = localStorage.getItem(getUserProfileKey());
   if (!data) {
     return {
       name: '',
@@ -196,7 +212,7 @@ export function getUserProfile(): UserProfile {
 }
 
 export function saveUserProfile(profile: UserProfile): void {
-  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+  localStorage.setItem(getUserProfileKey(), JSON.stringify(profile));
   setUserRegistered(true);
 }
 

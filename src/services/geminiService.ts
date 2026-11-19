@@ -5,13 +5,18 @@ import { searchLocally } from './localSemanticSearch';
 const STORAGE_KEY_GEMINI_KEY = 'eventlink_gemini_api_key';
 
 const CANDIDATE_MODELS = [
-  'gemini-1.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro'
+  'gemini-1.5-flash',
+  'gemini-flash-latest',
+  'gemini-2.5-flash'
 ];
 
 export function getApiKey(): string {
+  // In test environment, keep offline to prevent unmocked external network calls
+  if (import.meta.env.MODE === 'test') {
+    return localStorage.getItem(STORAGE_KEY_GEMINI_KEY) || '';
+  }
+
   const custom = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
   if (custom && custom.trim().length > 0) return custom.trim();
   

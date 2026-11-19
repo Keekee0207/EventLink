@@ -129,16 +129,17 @@ To configure your Google Gemini API key:
 
 EventLink includes an enterprise-grade automated test suite powered by Vitest, React Testing Library, and Happy-DOM, ensuring regression-free reliability across all core features.
 
-### Test Suites (37 Automated Tests across 8 Suites):
+### Test Suites (43 Automated Tests across 9 Suites):
 
-1. `localContactParser.test.ts`: Validates natural conversational voice note extraction, multi-skill parsing, phone number formats (+91 and 10-digit), and title case normalization.
-2. `localSemanticSearch.test.ts`: Verifies cross-domain concept bridges (Dart to Flutter, LLMs to AI, Figma to UI/UX, Chef to Culinary) and keyword match scoring.
-3. `storageService.test.ts`: Tests on-device offline persistence, full JSON data export and import, user profile registration, and duplicate prevention for events and contacts.
-4. `geminiService.test.ts`: Tests Gemini API integration, custom API key storage, and zero-latency graceful fallback to local NLP engines when offline.
-5. `ContactCard.test.tsx`: Tests rendering of contact data, communication links, relationship toggles (Inbound vs. Outbound), and contact deletion.
-6. `PipelineTab.test.tsx`: Validates lead pipeline rendering, dormant contact tracking, and 1-tap AI pitch generation.
-7. `SemanticSearchTab.test.tsx`: Verifies search bar queries, natural language sample pills, and result rendering.
-8. `RegistrationModal.test.tsx`: Tests attendee onboarding form validation, required field checks, and local profile creation.
+1. `authService.test.ts`: Verifies user registration, duplicate email/phone prevention, credential verification, and session logout.
+2. `localContactParser.test.ts`: Validates natural conversational voice note extraction, multi-skill parsing, phone number formats (+91 and 10-digit), and title case normalization.
+3. `localSemanticSearch.test.ts`: Verifies cross-domain concept bridges (Dart to Flutter, LLMs to AI, Figma to UI/UX, Chef to Culinary) and keyword match scoring.
+4. `storageService.test.ts`: Tests on-device offline persistence, full JSON data export and import, user profile registration, and duplicate prevention for events and contacts.
+5. `geminiService.test.ts`: Tests Gemini API integration, custom API key storage, and zero-latency graceful fallback to local NLP engines when offline.
+6. `ContactCard.test.tsx`: Tests rendering of contact data, communication links, relationship toggles (Inbound vs. Outbound), and contact deletion.
+7. `PipelineTab.test.tsx`: Validates lead pipeline rendering, dormant contact tracking, and 1-tap AI pitch generation.
+8. `SemanticSearchTab.test.tsx`: Verifies search bar queries, natural language sample pills, and result rendering.
+9. `RegistrationModal.test.tsx`: Tests attendee onboarding form validation, required field checks, and local profile creation.
 
 ### Running Tests Locally:
 

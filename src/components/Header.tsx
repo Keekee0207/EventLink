@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarDays, Search, Kanban, QrCode, Settings, Plus, User } from 'lucide-react';
+import { CalendarDays, Search, Kanban, QrCode, Settings, Plus, User, LogOut } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   onOpenCreateEvent: () => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
+  onLogout?: () => void;
   eventsCount: number;
   peopleCount: number;
   userProfile: UserProfile;
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCreateEvent,
   onOpenSettings,
   onOpenProfile,
+  onLogout,
   eventsCount,
   peopleCount,
   userProfile
@@ -138,6 +140,16 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="p-2 sm:p-2.5 rounded-2xl bg-white border-[2.5px] border-[#111111] shadow-neo-sm hover:bg-neo-coral/20 hover:text-neo-coral transition-all text-[#111111]"
+                title="Sign Out / Switch Account"
+              >
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
           </div>
 
         </div>

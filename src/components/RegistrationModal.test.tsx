@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { RegistrationModal } from './RegistrationModal';
 
@@ -23,7 +23,7 @@ describe('RegistrationModal Component', () => {
     expect(screen.getByPlaceholderText('e.g. Founder, AI Engineer')).toBeInTheDocument();
   });
 
-  it('should submit registration and invoke callback with valid profile', () => {
+  it('should submit registration and invoke callback with valid profile', async () => {
     const onRegister = vi.fn();
     render(
       <RegistrationModal isOpen={true} onRegisterSuccess={onRegister} />
@@ -40,13 +40,15 @@ describe('RegistrationModal Component', () => {
     const submitButton = screen.getByText('Register Profile & Enter EventLink');
     fireEvent.submit(submitButton.closest('form')!);
 
-    expect(onRegister).toHaveBeenCalledTimes(1);
-    expect(onRegister).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: 'Maya Patel',
-        role: 'AI Research Lead',
-        company: 'Nexus AI'
-      })
-    );
+    await waitFor(() => {
+      expect(onRegister).toHaveBeenCalledTimes(1);
+      expect(onRegister).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Maya Patel',
+          role: 'AI Research Lead',
+          company: 'Nexus AI'
+        })
+      );
+    });
   });
 });

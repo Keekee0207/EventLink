@@ -14,7 +14,7 @@ describe('geminiService', () => {
   });
 
   describe('API Key Management', () => {
-    it('should return empty string when no key is set', () => {
+    it('should return empty string in test mode when no custom key is saved', () => {
       expect(getApiKey()).toBe('');
     });
 

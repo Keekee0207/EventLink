@@ -45,3 +45,8 @@ export interface UserProfile {
   email: string;
   bio: string;
 }
+
+export interface UserAccount extends UserProfile {
+  id: string;
+  createdAt: string;
+}
