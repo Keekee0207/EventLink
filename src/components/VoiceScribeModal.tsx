@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mic, MicOff, Sparkles, X, Loader2, ArrowRight } from 'lucide-react';
-import { startListening, stopListening, isSpeechSupported } from '../services/speechService';
+import { startListening, stopListening } from '../services/speechService';
 import { parseVoiceTranscript } from '../services/geminiService';
 import { ParsedContact } from '../types';
 
@@ -60,7 +60,7 @@ export const VoiceScribeModal: React.FC<VoiceScribeModalProps> = ({
       onExtractSuccess(parsed, transcript);
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Gemini extraction failed. Check your API key.');
+      setErrorMsg(err.message || 'Extraction failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -89,7 +89,7 @@ export const VoiceScribeModal: React.FC<VoiceScribeModalProps> = ({
         </div>
 
         <p className="text-xs sm:text-sm text-neutral-600 mb-6 font-medium">
-          Speak naturally about the person you met. Gemini AI will extract their name, role, skills, and phone automatically with zero typing.
+          Speak naturally about the person you met. Gemini AI and our on-device NLP engine extract their name, role, skills, and phone automatically.
         </p>
 
         {/* Microphone Button */}
@@ -151,12 +151,12 @@ export const VoiceScribeModal: React.FC<VoiceScribeModalProps> = ({
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                <span>Extracting with Gemini...</span>
+                <span>Processing Note...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                <span>Auto-Fill with Gemini</span>
+                <span>Auto-Fill Contact Fields</span>
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </>
             )}

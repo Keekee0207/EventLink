@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mic, Image, User, Briefcase, Phone, Tag, FileText, Sparkles, Camera } from 'lucide-react';
-import { LinkedinIcon } from './Icons';
+import { X, Mic, Image, User, Briefcase, Phone, Tag, FileText, Sparkles, Camera, Scan, AlertCircle } from 'lucide-react';
 import { Event, Person, ParsedContact } from '../types';
 import { VoiceScribeModal } from './VoiceScribeModal';
+import { LinkedInQrScannerModal } from './LinkedInQrScannerModal';
+import { LinkedinIcon } from './Icons';
 
 interface AddContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveContact: (person: Omit<Person, 'id' | 'createdAt'>) => void;
   events: Event[];
+  existingPeople: Person[];
   selectedEventId?: string;
 }
 
@@ -17,6 +19,7 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
   onClose,
   onSaveContact,
   events,
+  existingPeople,
   selectedEventId
 }) => {
   const [eventId, setEventId] = useState(selectedEventId || events[0]?.id || '');
@@ -32,6 +35,8 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
   const [businessCardUri, setBusinessCardUri] = useState<string | null>(null);
 
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isLinkedInQrOpen, setIsLinkedInQrOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (selectedEventId) {
@@ -65,8 +70,23 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      alert('Please enter a contact name.');
+    setErrorMsg('');
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setErrorMsg('Please enter a contact name.');
+      return;
+    }
+
+    const targetEventId = eventId || events[0]?.id || 'default';
+
+    // Duplicate prevention: check if a contact with this name already exists in this event
+    const isDuplicate = existingPeople.some(
+      (p) => p.eventId === targetEventId && p.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setErrorMsg(`A contact named "${trimmedName}" already exists for this event. Duplicate contacts are not permitted.`);
       return;
     }
 
@@ -76,8 +96,8 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
       .filter((t) => t.length > 0);
 
     onSaveContact({
-      eventId: eventId || events[0]?.id || 'default',
-      name: name.trim(),
+      eventId: targetEventId,
+      name: trimmedName,
       designation: designation.trim(),
       company: company.trim(),
       contactNumber: contactNumber.trim(),
@@ -113,8 +133,15 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
             Add Person Met
           </h3>
           <p className="text-xs text-neutral-600 mb-6 font-medium">
-            Capture contact details via voice auto-scribing, business card photo, or manual form.
+            Capture contact details via voice auto-scribing, business card photo, or QR scan.
           </p>
+
+          {errorMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-red-100 border-2 border-red-500 text-red-800 text-xs font-bold flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           {/* Fast Modality Actions Banner */}
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -232,7 +259,7 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
               </div>
             </div>
 
-            {/* Designation & LinkedIn */}
+            {/* Designation & Company */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black uppercase text-neutral-700 mb-1">
@@ -244,7 +271,7 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
                     type="text"
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
-                    placeholder="AI Engineer • Startup"
+                    placeholder="AI Engineer"
                     className="w-full neo-input pl-9 p-2.5 text-sm"
                   />
                 </div>
@@ -252,18 +279,44 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
 
               <div>
                 <label className="block text-xs font-black uppercase text-neutral-700 mb-1">
-                  LinkedIn Profile URL
+                  Company / Startup
                 </label>
-                <div className="relative">
-                  <LinkedinIcon className="w-4 h-4 text-neutral-500 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    value={linkedinUrl}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                    placeholder="linkedin.com/in/username"
-                    className="w-full neo-input pl-9 p-2.5 text-sm"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="e.g. DeepTech Labs"
+                  className="w-full neo-input p-2.5 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* LinkedIn URL with Direct QR Scanner */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-black uppercase text-neutral-700">
+                  LinkedIn Profile
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsLinkedInQrOpen(true)}
+                  className="neo-btn bg-neo-yellow text-[#111111] px-2.5 py-1 text-[10px] font-black flex items-center"
+                  title="Scan attendee's LinkedIn QR code directly"
+                >
+                  <Scan className="w-3 h-3 mr-1" />
+                  <span>Scan LinkedIn QR</span>
+                </button>
+              </div>
+
+              <div className="relative">
+                <LinkedinIcon className="w-4 h-4 text-neutral-500 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  placeholder="https://linkedin.com/in/username"
+                  className="w-full neo-input pl-9 p-2.5 text-sm"
+                />
               </div>
             </div>
 
@@ -355,6 +408,13 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
         onExtractSuccess={handleVoiceExtractSuccess}
+      />
+
+      {/* LinkedIn QR Scanner */}
+      <LinkedInQrScannerModal
+        isOpen={isLinkedInQrOpen}
+        onClose={() => setIsLinkedInQrOpen(false)}
+        onScanSuccess={(url) => setLinkedinUrl(url)}
       />
     </>
   );

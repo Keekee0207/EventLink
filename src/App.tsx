@@ -15,8 +15,16 @@ import {
   Filter,
   CheckCircle2
 } from 'lucide-react';
-import { Event, Person } from './types';
-import { getEvents, saveEvents, getPeople, savePeople } from './services/storageService';
+import { Event, Person, UserProfile } from './types';
+import {
+  getEvents,
+  saveEvents,
+  getPeople,
+  savePeople,
+  getUserProfile,
+  saveUserProfile,
+  isUserRegistered
+} from './services/storageService';
 import { Header } from './components/Header';
 import { EventCard } from './components/EventCard';
 import { ContactCard } from './components/ContactCard';
@@ -26,10 +34,13 @@ import { SemanticSearchTab } from './components/SemanticSearchTab';
 import { PipelineTab } from './components/PipelineTab';
 import { QrShareModal } from './components/QrShareModal';
 import { SettingsModal } from './components/SettingsModal';
+import { RegistrationModal } from './components/RegistrationModal';
 
 export function App() {
   const [events, setEvents] = useState<Event[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile>(getUserProfile());
+  const [isRegistered, setIsRegistered] = useState<boolean>(true); // initially check on mount
   const [activeTab, setActiveTab] = useState<'events' | 'search' | 'pipeline' | 'qr'>('events');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -38,6 +49,7 @@ export function App() {
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [previewCardUri, setPreviewCardUri] = useState<string | null>(null);
 
   // Local event contact filter
@@ -46,11 +58,13 @@ export function App() {
   // Initial load
   useEffect(() => {
     reloadAllData();
+    setIsRegistered(isUserRegistered());
   }, []);
 
   const reloadAllData = () => {
     setEvents(getEvents());
     setPeople(getPeople());
+    setUserProfile(getUserProfile());
   };
 
   const triggerConfetti = () => {
@@ -61,6 +75,14 @@ export function App() {
         origin: { y: 0.6 }
       });
     } catch {}
+  };
+
+  const handleRegisterSuccess = (profile: UserProfile) => {
+    saveUserProfile(profile);
+    setUserProfile(profile);
+    setIsRegistered(true);
+    setIsProfileModalOpen(false);
+    triggerConfetti();
   };
 
   // Event Handlers
@@ -177,8 +199,10 @@ export function App() {
         }}
         onOpenCreateEvent={() => setIsAddEventOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
         eventsCount={events.length}
         peopleCount={people.length}
+        userProfile={userProfile}
       />
 
       {/* Main Container */}
@@ -424,6 +448,7 @@ export function App() {
         isOpen={isAddEventOpen}
         onClose={() => setIsAddEventOpen(false)}
         onSaveEvent={handleSaveEvent}
+        existingEvents={events}
       />
 
       <AddContactModal
@@ -431,6 +456,7 @@ export function App() {
         onClose={() => setIsAddContactOpen(false)}
         onSaveContact={handleSaveContact}
         events={events}
+        existingPeople={people}
         selectedEventId={selectedEvent?.id}
       />
 
@@ -463,6 +489,12 @@ export function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onDataReload={reloadAllData}
+      />
+
+      {/* Mandatory Registration Onboarding Modal (or Edit Profile) */}
+      <RegistrationModal
+        isOpen={!isRegistered || isProfileModalOpen}
+        onRegisterSuccess={handleRegisterSuccess}
       />
 
       {/* Business Card Photo Preview Modal */}

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Calendar, MapPin, Building, FileText } from 'lucide-react';
+import { X, Calendar, MapPin, Building, AlertCircle } from 'lucide-react';
 import { Event } from '../types';
 
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveEvent: (event: Omit<Event, 'id' | 'peopleCount' | 'createdAt'>) => void;
+  existingEvents: Event[];
 }
 
 const POPULAR_CITIES = [
@@ -20,27 +21,42 @@ const POPULAR_CITIES = [
 export const AddEventModal: React.FC<AddEventModalProps> = ({
   isOpen,
   onClose,
-  onSaveEvent
+  onSaveEvent,
+  existingEvents
 }) => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [city, setCity] = useState('');
   const [venue, setVenue] = useState('');
   const [description, setDescription] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      alert('Please enter an event name.');
+    setErrorMsg('');
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setErrorMsg('Please enter an event name.');
+      return;
+    }
+
+    // Duplicate event check
+    const isDuplicate = existingEvents.some(
+      (evt) => evt.title.toLowerCase().trim() === trimmedTitle.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setErrorMsg(`An event titled "${trimmedTitle}" already exists. Duplicate events are not permitted.`);
       return;
     }
 
     const fullLocation = [venue.trim(), city.trim()].filter(Boolean).join(', ');
 
     onSaveEvent({
-      title: title.trim(),
+      title: trimmedTitle,
       date,
       location: fullLocation || city || 'In-Person Event',
       description: description.trim()
@@ -69,6 +85,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
           Set up a dedicated hub for your hackathon, summit, or conference.
         </p>
 
+        {errorMsg && (
+          <div className="mb-4 p-3 rounded-xl bg-red-100 border-2 border-red-500 text-red-800 text-xs font-bold flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {/* Event Title */}
@@ -82,7 +105,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Google Buildathon 2026"
-              className="w-full neo-input p-2.5 text-sm"
+              className="w-full neo-input p-2.5 text-sm font-bold"
             />
           </div>
 

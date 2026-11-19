@@ -1,19 +1,15 @@
 import { ParsedContact, Person } from '../types';
+import { parseLocally } from './localContactParser';
+import { searchLocally } from './localSemanticSearch';
 
 const STORAGE_KEY_GEMINI_KEY = 'eventlink_gemini_api_key';
 
-// Prioritized list of Gemini models for automatic rollover if one experiences rate limits (429/503)
 const CANDIDATE_MODELS = [
   'gemini-1.5-flash',
   'gemini-2.0-flash',
   'gemini-1.5-flash-8b',
   'gemini-1.5-pro'
 ];
-
-// Fallback embedded key provided in the project
-const DEFAULT_KEY = [
-  'AQ','Ab8RN6JBWS1Q3','-bnIbw0ofyMLmqBZqA1uS7q_eonucMbIM8cDQ'
-].join('.');
 
 export function getApiKey(): string {
   const custom = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
@@ -22,7 +18,7 @@ export function getApiKey(): string {
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (envKey && envKey.trim().length > 0) return envKey.trim();
 
-  return DEFAULT_KEY;
+  return '';
 }
 
 export function saveApiKey(key: string): void {
@@ -35,9 +31,13 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
   for (const model of CANDIDATE_MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
@@ -48,9 +48,11 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
         })
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error?.message || `HTTP ${response.status} from model ${model}`);
+        throw new Error(errorData?.error?.message || `HTTP ${response.status}`);
       }
 
       const data = await response.json();
@@ -60,29 +62,29 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
       }
     } catch (err: any) {
       lastError = err;
-      console.warn(`Model ${model} failed, trying next model:`, err.message);
+      console.warn(`Gemini model ${model} attempt failed:`, err.message);
     }
   }
 
-  throw lastError || new Error('All Gemini models failed to respond.');
+  throw lastError || new Error('Gemini API call failed.');
 }
 
 /**
  * Parses raw voice note transcript into structured contact fields (Name, Designation, Skills, Description, Phone).
+ * Tries Gemini API first; if unavailable, seamlessly falls back to on-device NLP parser.
  */
 export async function parseVoiceTranscript(transcript: string): Promise<ParsedContact> {
   const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error('Gemini API key is not configured.');
-  }
 
-  const prompt = `
+  if (apiKey) {
+    try {
+      const prompt = `
 You are an AI assistant for a smart event networking app.
 Extract structured contact information from the following user voice note transcript:
 
 Transcript: "${transcript}"
 
-Respond ONLY with a valid JSON object matching this schema (do NOT include markdown code blocks or extra text):
+Respond ONLY with a valid JSON object matching this schema (do NOT include markdown code blocks or emojis):
 {
   "name": "Full Name of the person met (or empty string if not mentioned)",
   "designation": "Job title, company, or role",
@@ -92,23 +94,32 @@ Respond ONLY with a valid JSON object matching this schema (do NOT include markd
 }
 `.trim();
 
-  const responseText = await callGemini(prompt, apiKey);
-  const cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-  const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
-  const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleanJson);
+      const responseText = await callGemini(prompt, apiKey);
+      const cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleanJson);
 
-  return {
-    name: parsed.name || '',
-    designation: parsed.designation || '',
-    skills: parsed.skills || '',
-    description: parsed.description || '',
-    phone: parsed.phone || ''
-  };
+      if (parsed.name || parsed.designation || parsed.phone) {
+        return {
+          name: parsed.name || '',
+          designation: parsed.designation || '',
+          skills: parsed.skills || '',
+          description: parsed.description || transcript,
+          phone: parsed.phone || ''
+        };
+      }
+    } catch (err) {
+      console.warn('Gemini voice parsing failed, using high-speed local parser:', err);
+    }
+  }
+
+  // Graceful local fallback parsing (always succeeds, zero latency)
+  return parseLocally(transcript);
 }
 
 /**
- * Searches through contacts using Gemini to find people matching conceptual queries
- * (e.g., "Who knows about LLMs?", "Did I meet a chef?"), with instant local fallback.
+ * Searches through contacts using Gemini to find people matching conceptual queries.
+ * Tries Gemini first; if unavailable, seamlessly uses local semantic reasoning engine.
  */
 export async function searchContacts(query: string, people: Person[]): Promise<string> {
   const apiKey = getApiKey();
@@ -125,27 +136,27 @@ User Query: "${query}"
 Contacts Met at Events:
 ${contactsSummary}
 
-You are a smart personal networking assistant. 
-Analyze the user query and find the best contact match(es) from the list above based on conceptual understanding and skills (for example, if user asks about "LLMs" or "AI", match "AI Engineer", "Machine Learning", "NLP", etc.).
+You are a personal networking assistant. 
+Analyze the query and find the best contact match(es) from the list based on conceptual understanding (for example, if user asks about "LLMs", match "AI Engineer", "Machine Learning", "NLP"; if searching "Dart", match "Flutter").
 
-Format your response clearly using this template:
+Format your response cleanly using this exact plain-text template (DO NOT USE EMOJIS):
 
-🎯 Top Recommended Match
+[Top Recommended Match]
 • Name: [Full Name]
 • Role: [Role / Company]
 
-💡 Why They Are a Match:
+Context & Match Reason:
 [1-2 sentences clearly explaining why this person fits the user's specific request]
 
-🛠️ Relevant Skills:
+Relevant Skills:
 [List of matching skills]
 
-📞 Contact Actions:
-• Phone/WhatsApp: [Phone or "Not provided"]
+Contact Details:
+• Phone: [Phone or "Not provided"]
 • LinkedIn: [LinkedIn or "Not provided"]
 
 ---
-If multiple people match, list them cleanly with the same format.
+If multiple people match, list them with the same format.
 If no contacts match, state: "No direct match found in your past event contacts for this specific skill set. Try searching for a broader role or skill."
 `.trim();
 
@@ -154,35 +165,12 @@ If no contacts match, state: "No direct match found in your past event contacts 
         return result;
       }
     } catch (err) {
-      console.warn('Gemini search failed, falling back to local search:', err);
+      console.warn('Gemini search failed, falling back to local semantic search:', err);
     }
   }
 
-  // Local Fallback Search (100% Offline / Zero API fallback)
-  const q = query.toLowerCase().trim();
-  const matches = people.filter(p => 
-    p.name.toLowerCase().includes(q) ||
-    p.designation.toLowerCase().includes(q) ||
-    p.description.toLowerCase().includes(q) ||
-    p.tags.some(t => t.toLowerCase().includes(q))
-  );
-
-  if (matches.length === 0) {
-    return `No direct match found for "${query}" in your contacts.`;
-  }
-
-  return matches.map(p => `
-🎯 Top Match (Local Match)
-• Name: ${p.name}
-• Role: ${p.designation}
-
-💡 Context:
-${p.description || 'Met at event'}
-
-📞 Contact:
-• Phone: ${p.contactNumber || 'Not provided'}
-• LinkedIn: ${p.linkedinUrl || 'Not provided'}
-`).join('\n---\n');
+  // Graceful local semantic search (zero API dependency, conceptual knowledge graph)
+  return searchLocally(query, people);
 }
 
 /**
@@ -191,23 +179,23 @@ ${p.description || 'Met at event'}
 export async function generateFollowUpMessage(person: Person, eventTitle: string): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    return `Hi ${person.name}, it was great meeting you at ${eventTitle}! Would love to stay connected and follow up on our conversation.`;
+    return `Hi ${person.name}, it was great meeting you at ${eventTitle}. Would love to stay connected and follow up on our conversation regarding ${person.designation || 'our projects'}.`;
   }
 
   const prompt = `
-Write a friendly, professional 2-3 sentence follow-up message to send on WhatsApp or LinkedIn.
+Write a friendly, professional 2-sentence follow-up message to send on WhatsApp or LinkedIn.
 Contact Name: ${person.name}
 Role: ${person.designation}
 Event Met: ${eventTitle}
 Conversation Notes: ${person.description}
 
-Keep it warm, natural, and directly reference what was discussed. Do not use generic corporate jargon. Return ONLY the message text.
+Keep it warm, natural, and directly reference what was discussed. Do not use generic corporate jargon and do not use emojis. Return ONLY the message text.
 `.trim();
 
   try {
     const text = await callGemini(prompt, apiKey);
     return text.trim().replace(/^["']|["']$/g, '');
   } catch (err) {
-    return `Hi ${person.name}, it was great meeting you at ${eventTitle}! Loved our chat about ${person.designation || 'your work'}. Let's catch up soon.`;
+    return `Hi ${person.name}, it was great connecting with you at ${eventTitle}. Loved our chat about ${person.designation || 'your work'}. Let's catch up soon.`;
   }
 }

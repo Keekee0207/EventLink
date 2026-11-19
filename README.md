@@ -1,66 +1,124 @@
-# EventLink — Web Application
+# EventLink Web Application
 
-> **Smart In-Person Networking & Relationship CRM powered by Google Gemini API**  
-> Built with React, TypeScript, Tailwind CSS (Playful Memphis Neo-Brutalism Theme), and Vite.
-
----
-
-## 🌟 Key Features
-
-1. **Context-First Event Hubs:** Create dedicated spaces for each hackathon, summit, or conference (e.g. Google Buildathon 2026).
-2. **Gemini Voice Auto-Scribe:** Speak naturally for 5 seconds; Gemini extracts Name, Role, Skills, Phone, and Notes with zero manual typing.
-3. **Conversational Semantic Search:** Query your network conceptually (e.g., *"Who knows about LLMs?"* or *"Did I meet a chef?"*) with Gemini reasoning across all saved notes and context.
-4. **Inbound vs. Outbound Relationship Pipeline (CRM):**
-   - **Inbound Column:** Active connections with regular touchpoints.
-   - **Outbound Column:** Dormant contacts with 1-tap **AI Re-engagement Pitch** generation powered by Gemini!
-5. **P2P QR Code Contact Beam:**
-   - **My Profile QR:** Dynamic QR code of your digital business card.
-   - **Scan Attendee QR:** Live camera QR scanner using `html5-qrcode` to instantly import attendee contacts.
-6. **1-Tap Actions:** Direct WhatsApp follow-up with pre-drafted event templates, direct phone dialer links, and LinkedIn links.
-7. **100% Local Storage & Data Privacy:** All contacts, images, and notes are stored strictly in browser `localStorage`. Cloud calls to Gemini are ephemeral with zero external tracking.
+Smart In-Person Networking and Relationship CRM powered by Google Gemini API.
+Built with React, TypeScript, Vite, and Tailwind CSS in a Playful Memphis Neo-Brutalism design system.
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## Overview
+
+EventLink is an event-driven, privacy-first mobile and web companion designed to solve the breakdown of in-person networking at hackathons, conferences, and summits. It eliminates manual data entry, physical business card loss, and post-event relationship decay through multimodal capture, semantic search, and an actionable follow-up pipeline.
+
+All user contacts, event logs, and card images are stored strictly on-device in browser local storage. Cloud calls to the Gemini API operate statelessly as ephemeral processing pipelines with zero persistent cloud tracking.
+
+---
+
+## Core Capabilities
+
+### 1. Mandatory User Registration and Digital Profile
+* First-time users register their digital profile (Name, Role, Company, Phone, LinkedIn URL, and Bio) before accessing the dashboard.
+* Creates a dynamic, shareable peer-to-peer business card accessible from the header at any time.
+
+### 2. Context-First Event Spaces
+* Organize contacts by where you actually met them.
+* Create dedicated event containers (such as Google Buildathon 2026) with dates, venues, and attendee counters.
+* Built-in deduplication prevents creating duplicate event titles.
+
+### 3. Gemini Voice Auto-Scribing (with On-Device Fallback)
+* Tap the microphone and speak naturally for 5 seconds (for example: "Met Hari from DeepTech Labs, an AI engineer building LLMs, phone 9876543210").
+* Gemini 1.5 Flash extracts the person's Name, Role, Company, Phone Number, Skills, and Contextual Notes directly into form fields with zero manual typing.
+* Features a built-in offline NLP parser fallback so voice entry never fails even during network disruptions or API quota limits.
+
+### 4. Direct LinkedIn QR Code Camera Scanner
+* While adding a contact or editing your profile, tap "Scan LinkedIn QR".
+* Utilizes the device camera to scan another attendee's LinkedIn profile QR code or upload an image of a QR code, automatically extracting and populating the profile URL.
+
+### 5. Conversational Semantic Search Engine
+* Query your network using everyday natural language (for example: "Who knows about LLMs?", "Find Flutter developers", or "Did I meet a chef?").
+* Gemini and the built-in multi-domain knowledge graph reason conceptually across attendee notes, matching Dart experts when searching for Flutter, or food entrepreneurs when searching for culinary specialists.
+* Operates with instant local semantic fallback to guarantee search always delivers results.
+
+### 6. Inbound vs. Outbound Relationship Pipeline (Anti-Decay CRM)
+* Inbound Column: Tracks active, reciprocal relationships you frequently interact with post-event.
+* Outbound Column: Flags dormant or neglected contacts who have had zero recent touchpoints.
+* AI Re-engagement Pitch: Click "AI Pitch" on any outbound contact to have Gemini synthesize original conversation notes into a personalized 2-sentence message ready for WhatsApp or LinkedIn.
+
+### 7. Peer-to-Peer QR Profile Beam
+* Display your personal digital business card as an encrypted, scannable QR code.
+* Use the built-in attendee scanner to scan another EventLink user's screen and instantly import their profile.
+
+### 8. One-Tap Actions
+* WhatsApp Direct: Launches WhatsApp chats with pre-filled event follow-up templates.
+* Phone Dialer: One-tap cellular dialing via telephone protocols.
+* LinkedIn: Direct links to verified profiles.
+* Card Photo Preview: Attaches visual photos of paper business cards for permanent memory recall.
+
+### 9. Duplicate Prevention
+* Real-time validation prevents adding the same person twice to an event or creating duplicate event hubs.
+
+### 10. Data Sovereignty and 100% Local Storage
+* Zero cloud database tracking. All contacts, card images, and event rosters persist exclusively in the browser's encrypted local storage.
+* Includes full JSON backup export and restore capabilities in the Settings menu.
+
+---
+
+## Technology Stack
+
+* Frontend Framework: React 18, TypeScript, Vite
+* Styling: Tailwind CSS (Custom Memphis Neo-Brutalism theme tokens: 3px solid black borders, 4px zero-blur hard shadows, cream canvas, sunshine yellow, and brand purple accents)
+* Icons: Lucide React (Clean vector iconography, zero emojis)
+* Vision & QR Processing: html5-qrcode, qrcode
+* Voice Recognition: Web Speech API (SpeechRecognition / webkitSpeechRecognition)
+* Generative AI Engine: Google Gemini API (Gemini 1.5 Flash, Gemini 2.0 Flash) with on-device NLP fallback engines
+
+---
+
+## Local Development Setup
 
 ```bash
-# 1. Install dependencies
-pnpm install
-# or
-npm install
+# 1. Navigate to the project directory
+cd eventlink-web
 
-# 2. Start local development server
+# 2. Install dependencies
+pnpm install
+# or: npm install
+
+# 3. Start local development server
 pnpm run dev
-# or
-npm run dev
+# or: npm run dev
 ```
 
-Visit `http://localhost:3000` in your browser.
+Open your browser at:
+`http://localhost:3000`
 
 ---
 
-## 🚢 Deploy to Vercel in 1 Minute
+## Deploying to Vercel
 
-1. Push this folder to your GitHub repository:
+EventLink Web is configured for deployment on Vercel:
+
+1. Push your repository to GitHub:
    ```bash
    git remote add origin https://github.com/YOUR_USERNAME/eventlink-web.git
    git branch -M main
    git push -u origin main
    ```
-2. Go to **[vercel.com](https://vercel.com)** and click **"Add New Project"**.
+
+2. Open Vercel (https://vercel.com) and click "Add New Project".
 3. Import your `eventlink-web` repository.
-4. Vercel automatically detects Vite:
-   - **Framework Preset:** Vite
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-5. (Optional) In **Environment Variables**, add:
-   - `VITE_GEMINI_API_KEY`: *Your Google Gemini API Key*
-6. Click **Deploy**! 🚀
+4. Vercel automatically detects the Vite build preset:
+   * Build Command: `npm run build`
+   * Output Directory: `dist`
+5. (Optional) In Project Settings under Environment Variables, add:
+   * `VITE_GEMINI_API_KEY`: Your Google Gemini API Key.
+   * Note: Users can also input their own Gemini API key directly in the web app's Settings modal.
+6. Click Deploy.
 
 ---
 
-## 🔑 Gemini API Configuration
+## Gemini API Configuration
 
-You can configure the Gemini API key in two ways:
-* **In-App:** Click the **Settings** icon in the top right header to paste your API key directly (persists in your browser).
-* **Environment Variable:** Set `VITE_GEMINI_API_KEY` in `.env.local` or in your Vercel Project Settings.
+To configure your Google Gemini API key:
+1. Click the Settings icon in the top right header.
+2. Enter your API key (starts with AIzaSy...).
+3. Click "Save Key". The key is saved exclusively in your browser's local storage and used directly for real-time inference.

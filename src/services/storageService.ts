@@ -3,6 +3,7 @@ import { Event, Person, UserProfile } from '../types';
 const KEY_EVENTS = 'eventlink_events';
 const KEY_PEOPLE = 'eventlink_people';
 const KEY_PROFILE = 'eventlink_profile';
+const KEY_REGISTERED = 'eventlink_user_registered';
 
 const INITIAL_EVENTS: Event[] = [
   {
@@ -10,7 +11,7 @@ const INITIAL_EVENTS: Event[] = [
     title: 'Google Buildathon 2026',
     date: '2026-11-15',
     location: 'Chennai Trade Centre, Chennai, Tamil Nadu',
-    description: 'National startup & AI buildathon powered by Google DeepMind, Google Cloud, and nasscom.',
+    description: 'National startup & AI buildathon powered by Google DeepMind and Google Cloud.',
     peopleCount: 4,
     createdAt: new Date().toISOString()
   },
@@ -92,15 +93,13 @@ const INITIAL_PEOPLE: Person[] = [
   }
 ];
 
-const INITIAL_PROFILE: UserProfile = {
-  name: 'Sam Smith',
-  role: 'Founder & Full Stack Developer',
-  company: 'EventLink',
-  phone: '+91 98765 00000',
-  linkedin: 'https://linkedin.com/in/samsmith',
-  email: 'sam@eventlink.app',
-  bio: 'Building privacy-first AI networking tools for physical events.'
-};
+export function isUserRegistered(): boolean {
+  return localStorage.getItem(KEY_REGISTERED) === 'true';
+}
+
+export function setUserRegistered(val: boolean): void {
+  localStorage.setItem(KEY_REGISTERED, val ? 'true' : 'false');
+}
 
 export function getEvents(): Event[] {
   const data = localStorage.getItem(KEY_EVENTS);
@@ -109,14 +108,30 @@ export function getEvents(): Event[] {
     return INITIAL_EVENTS;
   }
   try {
-    return JSON.parse(data);
+    const parsed: Event[] = JSON.parse(data);
+    // Deduplicate by ID and Title
+    const seen = new Set<string>();
+    return parsed.filter((evt) => {
+      const key = evt.title.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   } catch {
     return INITIAL_EVENTS;
   }
 }
 
 export function saveEvents(events: Event[]): void {
-  localStorage.setItem(KEY_EVENTS, JSON.stringify(events));
+  // Deduplicate before saving
+  const seen = new Set<string>();
+  const cleanEvents = events.filter((evt) => {
+    const key = evt.title.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  localStorage.setItem(KEY_EVENTS, JSON.stringify(cleanEvents));
 }
 
 export function getPeople(): Person[] {
@@ -126,31 +141,63 @@ export function getPeople(): Person[] {
     return INITIAL_PEOPLE;
   }
   try {
-    return JSON.parse(data);
+    const parsed: Person[] = JSON.parse(data);
+    // Deduplicate by Name + EventId
+    const seen = new Set<string>();
+    return parsed.filter((p) => {
+      const key = `${p.eventId}-${p.name.toLowerCase().trim()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   } catch {
     return INITIAL_PEOPLE;
   }
 }
 
 export function savePeople(people: Person[]): void {
-  localStorage.setItem(KEY_PEOPLE, JSON.stringify(people));
+  // Deduplicate before saving
+  const seen = new Set<string>();
+  const cleanPeople = people.filter((p) => {
+    const key = `${p.eventId}-${p.name.toLowerCase().trim()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  localStorage.setItem(KEY_PEOPLE, JSON.stringify(cleanPeople));
 }
 
 export function getUserProfile(): UserProfile {
   const data = localStorage.getItem(KEY_PROFILE);
   if (!data) {
-    saveUserProfile(INITIAL_PROFILE);
-    return INITIAL_PROFILE;
+    return {
+      name: '',
+      role: '',
+      company: '',
+      phone: '',
+      linkedin: '',
+      email: '',
+      bio: ''
+    };
   }
   try {
     return JSON.parse(data);
   } catch {
-    return INITIAL_PROFILE;
+    return {
+      name: '',
+      role: '',
+      company: '',
+      phone: '',
+      linkedin: '',
+      email: '',
+      bio: ''
+    };
   }
 }
 
 export function saveUserProfile(profile: UserProfile): void {
   localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+  setUserRegistered(true);
 }
 
 export function exportAllDataJson(): string {

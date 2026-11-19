@@ -1,13 +1,16 @@
 import React from 'react';
-import { CalendarDays, Search, Kanban, QrCode, Settings, Sparkles, Plus } from 'lucide-react';
+import { CalendarDays, Search, Kanban, QrCode, Settings, Plus, User } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface HeaderProps {
   activeTab: 'events' | 'search' | 'pipeline' | 'qr';
   setActiveTab: (tab: 'events' | 'search' | 'pipeline' | 'qr') => void;
   onOpenCreateEvent: () => void;
   onOpenSettings: () => void;
+  onOpenProfile: () => void;
   eventsCount: number;
   peopleCount: number;
+  userProfile: UserProfile;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,8 +18,10 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onOpenCreateEvent,
   onOpenSettings,
+  onOpenProfile,
   eventsCount,
-  peopleCount
+  peopleCount,
+  userProfile
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-[#FFFDF8] border-b-[3px] border-[#111111] shadow-[0_4px_0_#111111]">
@@ -101,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Action Buttons */}
+          {/* Action Buttons & User Profile */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={onOpenCreateEvent}
@@ -112,10 +117,24 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden sm:inline">Add Event</span>
             </button>
 
+            {/* User Profile Badge */}
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center space-x-2 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl bg-white border-[2.5px] border-[#111111] shadow-neo-sm hover:bg-[#FAF6EE] transition-all text-[#111111]"
+              title="My Registered Profile"
+            >
+              <div className="w-7 h-7 rounded-xl bg-neo-mint border border-[#111111] flex items-center justify-center font-black text-xs uppercase">
+                {userProfile.name ? userProfile.name.substring(0, 2) : 'ME'}
+              </div>
+              <span className="hidden md:inline font-black text-xs line-clamp-1 max-w-[90px]">
+                {userProfile.name || 'Profile'}
+              </span>
+            </button>
+
             <button
               onClick={onOpenSettings}
               className="p-2 sm:p-2.5 rounded-2xl bg-white border-[2.5px] border-[#111111] shadow-neo-sm hover:bg-neutral-100 transition-all text-[#111111]"
-              title="Settings & Gemini API"
+              title="Settings & API"
             >
               <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>

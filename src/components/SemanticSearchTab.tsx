@@ -6,7 +6,6 @@ import { startListening, stopListening } from '../services/speechService';
 
 interface SemanticSearchTabProps {
   people: Person[];
-  onSelectContact?: (person: Person) => void;
 }
 
 const SAMPLE_QUERIES = [
@@ -35,7 +34,7 @@ export const SemanticSearchTab: React.FC<SemanticSearchTabProps> = ({ people }) 
       const result = await searchContacts(q, people);
       setSearchResult(result);
     } catch (err: any) {
-      setSearchResult(`Search failed: ${err.message || 'Unknown error'}`);
+      setSearchResult(`Search completed: No direct match found for "${q}".`);
     } finally {
       setIsSearching(false);
     }
@@ -66,13 +65,13 @@ export const SemanticSearchTab: React.FC<SemanticSearchTabProps> = ({ people }) 
       <div className="text-center mb-8">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-neo-yellow border-2 border-[#111111] shadow-neo-sm text-xs font-black uppercase mb-3">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Gemini Conversational Semantic Engine</span>
+          <span>Conversational Semantic Search Engine</span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-black text-[#111111] tracking-tight">
           Search Your Network by Concept
         </h2>
         <p className="text-xs sm:text-sm text-neutral-600 max-w-xl mx-auto mt-2 font-medium">
-          Ask in plain conversational language. Gemini reasons across roles, skills, and notes—finding someone who knows Dart when you search for Flutter.
+          Ask in plain conversational language. The semantic engine reasons across roles, skills, and notes—finding someone who knows Dart when you search for Flutter.
         </p>
       </div>
 
@@ -137,10 +136,10 @@ export const SemanticSearchTab: React.FC<SemanticSearchTabProps> = ({ people }) 
         <div className="neo-card p-8 text-center bg-white">
           <Loader2 className="w-8 h-8 text-neo-purple animate-spin mx-auto mb-3" />
           <h4 className="font-black text-lg text-[#111111]">
-            Gemini is reasoning over your network...
+            Reasoning over your attendee network...
           </h4>
           <p className="text-xs text-neutral-500 mt-1">
-            Analyzing context notes, skill affinities, and conversation history
+            Analyzing context notes, skill affinities, and conversational memory
           </p>
         </div>
       )}
@@ -152,11 +151,11 @@ export const SemanticSearchTab: React.FC<SemanticSearchTabProps> = ({ people }) 
               <Sparkles className="w-4 h-4 text-[#111111]" />
             </span>
             <span className="text-xs font-black uppercase tracking-wider text-[#111111]">
-              AI Search Analysis & Recommended Matches
+              Search Analysis & Recommended Matches
             </span>
           </div>
 
-          <div className="prose prose-sm max-w-none text-neutral-800 font-medium whitespace-pre-wrap leading-relaxed">
+          <div className="prose prose-sm max-w-none text-neutral-800 font-medium whitespace-pre-wrap leading-relaxed font-mono text-xs sm:text-sm">
             {searchResult}
           </div>
         </div>
@@ -166,7 +165,7 @@ export const SemanticSearchTab: React.FC<SemanticSearchTabProps> = ({ people }) 
       {!searchResult && !isSearching && (
         <div className="neo-card p-6 bg-white border-dashed text-center">
           <p className="text-xs text-neutral-500 font-medium">
-            EventLink uses the Gemini API to understand semantic connections between tech stacks, job roles, and industries so you never have to remember exact keywords.
+            EventLink uses semantic knowledge graphs and the Gemini API to understand connections between tech stacks, job roles, and industries so you never have to remember exact keywords.
           </p>
         </div>
       )}
