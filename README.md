@@ -129,7 +129,7 @@ To configure your Google Gemini API key:
 
 EventLink includes an enterprise-grade automated test suite powered by Vitest, React Testing Library, and Happy-DOM, ensuring regression-free reliability across all core features.
 
-### Test Suites (43 Automated Tests across 9 Suites):
+### Test Suites (53 Automated Tests across 11 Suites):
 
 1. `authService.test.ts`: Verifies user registration, duplicate email/phone prevention, credential verification, and session logout.
 2. `localContactParser.test.ts`: Validates natural conversational voice note extraction, multi-skill parsing, phone number formats (+91 and 10-digit), and title case normalization.
@@ -140,6 +140,8 @@ EventLink includes an enterprise-grade automated test suite powered by Vitest, R
 7. `PipelineTab.test.tsx`: Validates lead pipeline rendering, dormant contact tracking, and 1-tap AI pitch generation.
 8. `SemanticSearchTab.test.tsx`: Verifies search bar queries, natural language sample pills, and result rendering.
 9. `RegistrationModal.test.tsx`: Tests attendee onboarding form validation, required field checks, and local profile creation.
+10. `AddEventModal.test.tsx`: Tests event space creation, required validation, and duplicate event prevention.
+11. `AddContactModal.test.tsx`: Tests connection capture, tag parsing, inbound/outbound categorisation, and duplicate contact prevention.
 
 ### Running Tests Locally:
 
