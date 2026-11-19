@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neo-yellow: #FFDE59;
+  --neo-purple: #8E70B6;
+  --neo-lilac: #B2ABDE;
+  --neo-coral: #FF6B6B;
+  --neo-mint: #4EBA6F;
+  --neo-blue: #4D77FF;
+  --neo-dark: #111111;
+  --neo-cream: #FFFDF8;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #FAF6EE;
+  color: #111111;
+  margin: 0;
+  padding: 0;
+}
+
+/* Memphis Polka Dot Pattern */
+.bg-neo-dots {
+  background-color: #FBBF24;
+  background-image: radial-gradient(#D97706 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.bg-neo-dots-subtle {
+  background-color: #FAF5EC;
+  background-image: radial-gradient(#E2DAC9 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Neo-Brutalist Card Standard */
+.neo-card {
+  background-color: #FFFDF8;
+  border: 3px solid #111111;
+  border-radius: 20px;
+  box-shadow: 4px 4px 0px #111111;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neo-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0px #111111;
+}
+
+.neo-card-flat {
+  background-color: #FFFDF8;
+  border: 3px solid #111111;
+  border-radius: 20px;
+  box-shadow: 4px 4px 0px #111111;
+}
+
+/* Neo-Brutalist Buttons */
+.neo-btn {
+  border: 2.5px solid #111111;
+  box-shadow: 3px 3px 0px #111111;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #111111;
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #111111;
+}
+
+/* Neo-Brutalist Input */
+.neo-input {
+  border: 2.5px solid #111111;
+  border-radius: 14px;
+  background-color: #FFFDF8;
+  box-shadow: 2px 2px 0px #111111;
+  outline: none;
+  font-weight: 500;
+  transition: box-shadow 0.15s ease;
+}
+
+.neo-input:focus {
+  box-shadow: 4px 4px 0px #8E70B6;
+  border-color: #111111;
+}
+
+/* Badge pills */
+.neo-pill {
+  border: 2px solid #111111;
+  box-shadow: 2px 2px 0px #111111;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6EE;
+  border-left: 2px solid #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFDE59;
+  border: 2px solid #111111;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8E70B6;
+}
